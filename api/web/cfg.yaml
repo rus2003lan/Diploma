@@ -1,0 +1,9 @@
+package: web
+generate:
+  chi-server: true
+  models: true
+  strict-server: true
+  embedded-spec: true
+output: ./api/web/gen/gen.go
+output-options:
+  skip-prune: true

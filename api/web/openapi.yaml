@@ -1,0 +1,282 @@
+openapi: 3.0.3
+info:
+  title: Reports
+  description: API for work with reports
+  version: 0.0.1
+servers:
+  - url: /
+tags:
+  - description: Web API
+    name: web
+paths:
+  /api/report:
+    get:
+      operationId: ReportList
+      summary: get reports list
+      responses:
+        "200":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/ReportsList"
+          description: OK
+        "400":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Validation error
+        "404":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: The specified resource was not found
+        "500":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      tags:
+        - web
+    post:
+      operationId: ReportSave
+      summary: save report
+      parameters:
+        - description: url
+          explode: true
+          in: query
+          name: url
+          schema:
+            type: string
+          style: form
+          required: true
+      responses:
+        "200":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                type: string
+          description: OK
+        "400":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Validation error
+        "404":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: The specified resource was not found
+        "500":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      tags:
+        - web
+  /api/doc:
+    get:
+      operationId: Doc
+      responses:
+        "200":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Docs"
+          description: OK
+        "401":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Unauthorized
+        "403":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Forbidden
+        "500":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: get doc
+      tags:
+        - web
+  /api/report/{id}:
+    get:
+      operationId: "ReportFetch"
+      parameters:
+        - name: id
+          explode: false
+          in: path
+          required: true
+          schema:
+            type: string
+          style: simple
+      responses:
+        "200":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Report"
+          description: OK
+        "400":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Validation error
+        "404":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: The specified resource was not found
+        "500":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: get report info by id
+      tags:
+        - web
+  /api/report/{id}/sqlmap:
+    get:
+      operationId: "ReportSQLMap"
+      parameters:
+        - name: id
+          explode: false
+          in: path
+          required: true
+          schema:
+            type: string
+          style: simple
+      responses:
+        "200":
+          content:
+            text/plain:
+              schema:
+                type: string
+          description: sqlmap report
+        "400":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Validation error
+        "404":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: The specified resource was not found
+        "500":
+          content:
+            application/json; charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/Error"
+          description: Internal server error
+      summary: get report info by id
+      tags:
+        - web
+components:
+  responses:
+    NotFound:
+      content:
+        application/json; charset=UTF-8:
+          schema:
+            $ref: "#/components/schemas/Error"
+      description: The specified resource was not found
+    BadRequest:
+      content:
+        application/json; charset=UTF-8:
+          schema:
+            $ref: "#/components/schemas/Error"
+      description: Validation error
+    Internal:
+      content:
+        application/json; charset=UTF-8:
+          schema:
+            $ref: "#/components/schemas/Error"
+      description: Internal server error
+  schemas:
+    ReportsList:
+      items:
+        $ref: "#/components/schemas/Report"
+      type: array
+      x-omitempty: false
+      required:
+        - items
+    Report:
+      type: object
+      required:
+        - id
+        - urls
+      properties:
+        id:
+          type: string
+        urls:
+          type: array
+          items:
+            $ref: "#/components/schemas/URL"
+            x-omitempty: false
+    URL:
+      type: object
+      properties:
+        method:
+          type: string
+        url:
+          type: string
+        params:
+          type: array
+          items:
+            $ref: "#/components/schemas/Param"
+            x-omitempty: false
+      required:
+        - url
+        - method
+        - params
+    Param:
+      type: object  
+      properties:
+        name:
+          type: string
+        values:
+          type: array
+          items:
+            type: string
+        patterns:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - values
+        - patterns
+    Error:
+      example:
+        code: 200
+        message: message
+      properties:
+        message:
+          type: string
+        code:
+          type: integer
+      required:
+        - message
+        - code
+      type: object
+    Docs:
+      type: string
+      x-go-type: openapi3.T
+      x-go-type-import:
+        path: github.com/getkin/kin-openapi/openapi3

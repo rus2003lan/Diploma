@@ -1,4 +1,25 @@
 server:
   port: 8080
 
+startupIndexConfig:
+  index: report
+  updateMapping: false
+  createMapping: true
+  mappingPath: /home/ruslan/diploma-project/configs/mappings/report.json
+  alias:
+  shards:
+  replics:
+
+elastic:
+  index: report
+  hosts:
+    - http://localhost:9200
+  maxRetries: 5
+
+ceph:
+  endpoint: "http://localhost:9000"
+  accessKey: "minio"
+  secretKey: "minio123"
+  bucket: "sqlmap-report"
+
 env: dev

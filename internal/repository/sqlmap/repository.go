@@ -1,13 +1,13 @@
 package sqlmap
 
-import "sync"
-
 type Repository struct {
-	storage sync.Map
+	ceph   Ceph
+	bucket string
 }
 
-func New() *Repository {
+func New(c Ceph, b string) *Repository {
 	return &Repository{
-		storage: sync.Map{},
+		bucket: b,
+		ceph:   c,
 	}
 }

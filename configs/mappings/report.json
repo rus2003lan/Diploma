@@ -1,0 +1,41 @@
+{
+    "mappings": {
+      "dynamic": "strict",
+      "properties": {
+        "id": {
+          "type": "keyword"
+        },
+        "urls": {
+          "dynamic": "strict",
+          "properties": {
+            "params": {
+              "dynamic": "strict",
+              "properties": {
+                "name": {
+                  "type": "keyword"
+                },
+                "values": {
+                  "type": "keyword"
+                },
+                "patterns": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "url": {
+              "type": "keyword"
+            },
+            "method": {
+              "type": "keyword"
+            }
+          }
+        }
+      }
+    },
+    "settings": {
+      "index": {
+        "number_of_shards": "5",
+        "number_of_replicas": "1"
+      }
+    }
+  }

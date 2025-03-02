@@ -68,7 +68,7 @@ func (s *Service) Create(ctx context.Context, cmd model.ReportCreateCommand) err
 		return s.s.Create(gctx, model.SQLMapCommand{
 			ID:     cmd.Report.Id,
 			URL:    cmd.URL,
-			Report: "",
+			Report: nil,
 		})
 	})
 

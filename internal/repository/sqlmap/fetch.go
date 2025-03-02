@@ -1,18 +1,26 @@
 package sqlmap
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"io"
 
 	"diploma-project/internal/model"
 )
 
 func (r *Repository) Fetch(ctx context.Context, q model.SQLMapCommand) (string, error) {
-	report, ok := r.storage.Load(q.ID)
-	if !ok {
-		return "", model.ErrNotFound
+	res, err := r.ceph.FetchFile(ctx, r.bucket, q.ID)
+	if err != nil {
+		return "", fmt.Errorf("fetch file: %w", mapCephErrToModelErr(err))
 	}
 
-	res := report.(string)
+	var buf bytes.Buffer
 
-	return res, nil
+	_, err = io.Copy(&buf, res.Data)
+	if err != nil {
+		return "", fmt.Errorf("copy data: %w", err)
+	}
+
+	return buf.String(), nil
 }

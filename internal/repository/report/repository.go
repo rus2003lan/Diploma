@@ -1,13 +1,11 @@
 package report
 
-import "sync"
-
 type Repository struct {
-	storage sync.Map
+	es Elastic
 }
 
-func New() *Repository {
+func New(es Elastic) *Repository {
 	return &Repository{
-		storage: sync.Map{},
+		es: es,
 	}
 }

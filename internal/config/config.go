@@ -1,6 +1,8 @@
 package config
 
 import (
+	"diploma-project/pkg/ceph"
+	"diploma-project/pkg/elastic"
 	"errors"
 	"fmt"
 
@@ -15,8 +17,11 @@ type Server struct {
 }
 
 type Config struct {
-	Server      Server `yaml:"server" validate:"required"`
-	Env         string `yaml:"env" validate:"required"`
+	Server             Server                      `yaml:"server" validate:"required"`
+	Elastic            *elastic.Cfg                `yaml:"elastic" validate:"required"`
+	StartupIndexConfig *elastic.StartupIndexConfig `yaml:"startupIndexConfig" validate:"required"`
+	Ceph               *ceph.Config                `yaml:"ceph" validate:"required"`
+	Env                string                      `yaml:"env" validate:"required"`
 }
 
 func LoadConfig(path string) (*Config, error) {

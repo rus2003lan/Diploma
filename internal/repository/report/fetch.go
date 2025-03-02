@@ -3,15 +3,19 @@ package report
 import (
 	"context"
 	"diploma-project/internal/model"
+	"fmt"
 )
 
 func (r *Repository) Fetch(ctx context.Context, q model.ReportFetchQuery) (*model.Report, error) {
-	report, ok := r.storage.Load(q.ID)
-	if !ok {
-		return nil, model.ErrNotFound
+	hit, err := r.es.GetDoc(ctx, q.ID)
+	if err != nil {
+		return nil, fmt.Errorf("get doc from elastic: %w", mapElasticErrToModelErr(err))
 	}
 
-	res := report.(model.Report)
+	report, err := mapElasticHitToModel(hit)
+	if err != nil {
+		return nil, fmt.Errorf("map report to model: %w", err)
+	}
 
-	return &res, nil
+	return &report, nil
 }

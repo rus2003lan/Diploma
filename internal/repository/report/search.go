@@ -3,14 +3,19 @@ package report
 import (
 	"context"
 	"diploma-project/internal/model"
+	"fmt"
 )
 
 func (r *Repository) Search(ctx context.Context, q model.ReportSearchQuery) ([]model.Report, error) {
-	var reports []model.Report
-	r.storage.Range(func(key, value any) bool {
-		reports = append(reports, value.(model.Report))
-		return true
-	})
+	resp, err := r.es.Search(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("reports search: %w", mapElasticErrToModelErr(err))
+	}
 
-	return reports, nil
+	res, err := mapElasticFetchRespToModel(resp)
+	if err != nil {
+		return nil, fmt.Errorf("map repo reports to model: %w", err)
+	}
+
+	return res, nil
 }

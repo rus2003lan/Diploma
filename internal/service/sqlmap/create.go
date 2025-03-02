@@ -25,7 +25,7 @@ func (s *Service) Create(ctx context.Context, cmd model.SQLMapCommand) error {
 	return nil
 }
 
-func createReport(url string) (string, error) {
+func createReport(url string) ([]byte, error) {
 	cmd := exec.Command(
 		"sqlmap",
 		"-u",
@@ -37,8 +37,8 @@ func createReport(url string) (string, error) {
 
 	err := cmd.Run()
 	if err != nil {
-		return "", fmt.Errorf("sqlmap running: %w", err)
+		return nil, fmt.Errorf("sqlmap running: %w", err)
 	}
 
-	return out.String(), nil
+	return out.Bytes(), nil
 }

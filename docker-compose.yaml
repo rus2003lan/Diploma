@@ -1,0 +1,47 @@
+version: "3.7"
+services:
+
+  elasticsearch:
+    image: bitnami/elasticsearch:7.17.10
+    container_name: elasticsearch-diploma
+    ports:
+      - 9200:9200
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - elastic_vol:/usr/share/elasticsearch/data
+
+  kibana:
+    image: bitnami/kibana:7.17.10
+    container_name: kibana-diploma
+    ports:
+      - 5601:5601
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+        reservations:
+          cpus: "1.0"
+    depends_on:
+      - elasticsearch
+    
+  minio:
+    image: minio/minio
+    container_name: minio-diploma
+    ports:
+      - 9000:9000
+      - 9001:9001
+    volumes:
+      - minio_vol:/data
+    command: server --console-address ":9001" /data
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+
+volumes:
+  elastic_vol:
+  minio_vol:

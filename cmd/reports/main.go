@@ -31,8 +31,14 @@ func runServer(c *cli.Context) error {
 	obsContainer := provider.NewObserveContainer(cfg)
 	defer obsContainer.Logger(c.Context).Sync()
 
+	clientContainer := provider.NewClientContainer(
+		*cfg,
+		*obsContainer.Logger(c.Context),
+	)
+
 	repoContainer := provider.NewRepositoryContainer(
 		cfg,
+		*clientContainer,
 	)
 
 	serviceContainer := provider.NewServiceContainer(

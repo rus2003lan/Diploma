@@ -5,7 +5,7 @@ startupIndexConfig:
   index: report
   updateMapping: false
   createMapping: true
-  mappingPath: /home/ruslan/diploma-project/configs/mappings/report.json
+  mappingPath: ./configs/mappings/report.json
   alias:
   shards:
   replics:

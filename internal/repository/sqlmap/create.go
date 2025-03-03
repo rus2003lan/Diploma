@@ -2,14 +2,13 @@ package sqlmap
 
 import (
 	"context"
-	"crypto/sha256"
-	"diploma-project/internal/model"
 	"fmt"
 	"net/http"
+
+	"diploma-project/internal/model"
 )
 
 const bufLen = 512
-
 
 func (r *Repository) Create(ctx context.Context, cmd model.SQLMapCommand) error {
 	data := cmd.Report
@@ -22,9 +21,7 @@ func (r *Repository) Create(ctx context.Context, cmd model.SQLMapCommand) error 
 
 	filetype := http.DetectContentType(data[:bufBound])
 
-	hash := fmt.Sprintf("%x", sha256.Sum256(data))
-
-	err := r.ceph.PutFile(ctx, r.bucket, hash, filetype, data)
+	err := r.ceph.PutFile(ctx, r.bucket, cmd.ID, filetype, data)
 	if err != nil {
 		return fmt.Errorf("put file to ceph: %w", mapCephErrToModelErr(err))
 	}

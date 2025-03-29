@@ -13,6 +13,7 @@
             --dark-color: #343a40;
             --success-color: #28a745;
             --danger-color: #dc3545;
+            --pattern-color: #ff9800;
         }
         
         body {
@@ -90,11 +91,12 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             padding: 20px;
-            transition: transform 0.3s;
+            transition: all 0.3s;
         }
         
         .report-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         
         .report-header {
@@ -159,6 +161,21 @@
         
         .param-name {
             font-weight: bold;
+        }
+        
+        .param-patterns {
+            color: var(--pattern-color);
+            font-family: monospace;
+            background-color: #fff3e0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-top: 4px;
+            font-size: 0.85rem;
+            border-left: 3px solid var(--pattern-color);
+        }
+        
+        .report-actions {
+            margin-top: 15px;
         }
         
         .modal {
@@ -238,17 +255,6 @@
             animation: spin 1s linear infinite;
             margin: 0 auto;
         }
-
-        .param-patterns {
-            color: #ff9800;
-            font-family: monospace;
-            background-color: #fff3e0;
-            padding: 4px 8px;
-            border-radius: 4px;
-            margin-top: 4px;
-            font-size: 0.85rem;
-            border-left: 3px solid #ff9800;
-        }
         
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -308,10 +314,8 @@
         let reports = [];
         
         document.addEventListener('DOMContentLoaded', () => {
-            // Load reports immediately
             loadReports();
             
-            // Setup modal controls
             const newReportBtn = document.getElementById('newReportBtn');
             const newReportModal = document.getElementById('newReportModal');
             const sqlmapModal = document.getElementById('sqlmapModal');
@@ -328,7 +332,6 @@
                 });
             });
             
-            // Handle form submission
             document.getElementById('reportForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const url = document.getElementById('targetUrl').value;
@@ -337,7 +340,6 @@
                 document.getElementById('reportForm').reset();
             });
             
-            // Close modal when clicking outside
             window.addEventListener('click', (e) => {
                 if (e.target === newReportModal) {
                     newReportModal.style.display = 'none';
@@ -358,7 +360,6 @@
                 
                 reports = await response.json();
                 
-                // Добавляем проверку структуры данных
                 if (!Array.isArray(reports)) {
                     throw new Error('Invalid data format: expected array');
                 }
@@ -372,7 +373,7 @@
                 console.error('Error loading reports:', error);
             }
         }
-
+        
         function displayReports() {
             const container = document.getElementById('reportsContainer');
             container.innerHTML = '';
@@ -383,7 +384,6 @@
             }
             
             reports.forEach(report => {
-                // Проверяем наличие обязательных полей
                 if (!report || !report.id || !report.urls) {
                     console.warn('Invalid report structure:', report);
                     return;
@@ -392,20 +392,11 @@
                 const reportCard = document.createElement('div');
                 reportCard.className = 'report-card';
                 
-                // Безопасная обработка URLs
-                const urlsHtml = (report.urls || []).map(url => {
-                    // Проверяем структуру URL
-                    if (!url || !url.method || !url.url || !url.params) {
-                        console.warn('Invalid URL structure:', url);
-                        return '';
-                    }
+                const urlsHtml = report.urls.map(url => {
+                    if (!url || !url.method || !url.url || !url.params) return '';
                     
-                    // Безопасная обработка параметров
                     const paramsHtml = (url.params || []).map(param => {
-                        if (!param || !param.name) {
-                            console.warn('Invalid param structure:', param);
-                            return '';
-                        }
+                        if (!param || !param.name) return '';
                         
                         return `
                             <div class="param-item">
@@ -434,13 +425,13 @@
                 
                 reportCard.innerHTML = `
                     <div class="report-header">
-                        <h3 class="report-title">Security Report</h3>
+                        <h3 class="report-title">Security Report (${report.urls.length} URLs)</h3>
                         <span class="report-id">ID: ${report.id}</span>
                     </div>
                     <div class="report-urls">
                         ${urlsHtml || '<p>No URL data available</p>'}
                     </div>
-                    <div class="report-actions" style="margin-top: 15px;">
+                    <div class="report-actions">
                         <button onclick="getSQLMapReport('${report.id}')" class="btn btn-accent">
                             View SQLMap Report
                         </button>
@@ -461,7 +452,6 @@
                     throw new Error(await response.text());
                 }
                 
-                // Refresh the reports list
                 await loadReports();
             } catch (error) {
                 alert(`Error creating report: ${error.message}`);

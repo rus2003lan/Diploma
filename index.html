@@ -62,6 +62,16 @@
             font-size: 1rem;
             transition: background-color 0.3s;
         }
+
+        .hidden-items-notice {
+            text-align: center;
+            padding: 10px;
+            color: #666;
+            font-style: italic;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
         
         .btn:hover {
             background-color: var(--secondary-color);
@@ -79,6 +89,19 @@
             background-color: var(--accent-color);
         }
         
+        .btn-toggle {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        
+        .btn-toggle:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
         .report-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -92,6 +115,8 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             padding: 20px;
             transition: all 0.3s;
+            overflow: hidden; /* Добавлено чтобы содержимое не выходило за границы */
+            word-wrap: break-word; /* Перенос длинных слов */
         }
         
         .report-card:hover {
@@ -113,6 +138,12 @@
             font-weight: bold;
             color: var(--dark-color);
             margin: 0;
+        }
+        
+        .report-count {
+            opacity: 0.6;
+            font-size: 0.9rem;
+            font-weight: normal;
         }
         
         .report-id {
@@ -150,32 +181,55 @@
         }
         
         .url-address {
-            word-break: break-all;
+            word-break: break-all; /* Разрешить разрыв в любом месте слова */
             font-family: monospace;
-        }
-        
-        .param-item {
-            margin-top: 8px;
-            font-size: 0.9rem;
+            display: inline-block; /* Для правильного применения word-break */
+            max-width: 100%; /* Ограничение по ширине */
         }
         
         .param-name {
             font-weight: bold;
         }
         
+        .param-item {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            word-break: break-word; /* Перенос длинных значений параметров */
+        }
+
         .param-patterns {
             color: var(--pattern-color);
             font-family: monospace;
             background-color: #fff3e0;
-            padding: 4px 8px;
+            padding: 2px 6px;
             border-radius: 4px;
             margin-top: 4px;
             font-size: 0.85rem;
             border-left: 3px solid var(--pattern-color);
+            display: inline-block;
+            white-space: nowrap;
         }
         
         .report-actions {
             margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .report-urls.collapsed {
+            max-height: 300px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .report-urls.collapsed::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1));
         }
         
         .modal {
@@ -375,72 +429,135 @@
         }
         
         function displayReports() {
-            const container = document.getElementById('reportsContainer');
-            container.innerHTML = '';
-            
-            if (!reports || reports.length === 0) {
-                container.innerHTML = '<p>No reports available. Create your first report!</p>';
-                return;
-            }
-            
-            reports.forEach(report => {
-                if (!report || !report.id || !report.urls) {
-                    console.warn('Invalid report structure:', report);
-                    return;
-                }
-                
-                const reportCard = document.createElement('div');
-                reportCard.className = 'report-card';
-                
-                const urlsHtml = report.urls.map(url => {
-                    if (!url || !url.method || !url.url || !url.params) return '';
-                    
-                    const paramsHtml = (url.params || []).map(param => {
-                        if (!param || !param.name) return '';
-                        
-                        return `
-                            <div class="param-item">
-                                <span class="param-name">${param.name}:</span>
-                                <span>${(param.values || []).join(', ')}</span>
-                                ${param.patterns && param.patterns.length > 0 ? `
-                                    <div class="param-patterns">
-                                        <strong>Patterns detected:</strong>
-                                        <div>${param.patterns.join('</div><div>')}</div>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        `;
-                    }).join('');
-                    
-                    return `
-                        <div class="url-item">
-                            <div>
-                                <span class="url-method method-${url.method.toLowerCase()}">${url.method}</span>
-                                <span class="url-address">${url.url}</span>
-                            </div>
-                            ${paramsHtml}
-                        </div>
-                    `;
-                }).join('');
-                
-                reportCard.innerHTML = `
-                    <div class="report-header">
-                        <h3 class="report-title">Security Report (${report.urls.length} URLs)</h3>
-                        <span class="report-id">ID: ${report.id}</span>
-                    </div>
-                    <div class="report-urls">
-                        ${urlsHtml || '<p>No URL data available</p>'}
-                    </div>
-                    <div class="report-actions">
-                        <button onclick="getSQLMapReport('${report.id}')" class="btn btn-accent">
-                            View SQLMap Report
-                        </button>
-                    </div>
-                `;
-                
-                container.appendChild(reportCard);
-            });
+    const container = document.getElementById('reportsContainer');
+    container.innerHTML = '';
+
+    if (!reports || reports.length === 0) {
+        container.innerHTML = '<p>No reports available. Create your first report!</p>';
+        return;
+    }
+
+    reports.forEach(report => {
+        if (!report || !report.id || !report.urls) {
+            console.warn('Invalid report structure:', report);
+            return;
         }
+
+        const reportCard = document.createElement('div');
+        reportCard.className = 'report-card';
+        reportCard.dataset.reportId = report.id;
+        
+        // Сохраняем полный список URL в data-атрибуте
+        reportCard.dataset.allUrls = JSON.stringify(report.urls);
+        
+        const shouldCollapse = report.urls.length > 3;
+        const displayedUrls = shouldCollapse ? report.urls.slice(0, 3) : report.urls;
+        const hiddenCount = report.urls.length - 3;
+
+        const urlsHtml = displayedUrls.map(generateUrlHtml).join('');
+
+        reportCard.innerHTML = `
+            <div class="report-header">
+                <h3 class="report-title">
+                    Security Report 
+                    <span class="report-count">(${report.urls.length} URLs)</span>
+                </h3>
+                <span class="report-id">ID: ${report.id}</span>
+            </div>
+            <div class="report-urls ${shouldCollapse ? 'collapsed' : ''}">
+                ${urlsHtml || '<p>No URL data available</p>'}
+                ${shouldCollapse ? `
+                    <div class="hidden-items-notice">
+                        ... ${hiddenCount} more URLs hidden
+                    </div>
+                ` : ''}
+            </div>
+            <div class="report-actions">
+                ${shouldCollapse ? `
+                    <button class="btn btn-toggle toggle-report-btn">
+                        Show All
+                    </button>
+                ` : ''}
+                <button onclick="getSQLMapReport('${report.id}')" class="btn btn-accent">
+                    View SQLMap Report
+                </button>
+            </div>
+        `;
+
+        container.appendChild(reportCard);
+    });
+
+    // Добавляем обработчики событий после создания DOM
+    document.querySelectorAll('.toggle-report-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            toggleReportCollapse(this);
+        });
+    });
+}
+
+function generateUrlHtml(url) {
+    if (!url || !url.method || !url.url || !url.params) return '';
+    
+    const paramsHtml = (url.params || []).map(param => {
+        if (!param || !param.name) return '';
+        
+        return `
+            <div class="param-item">
+                <span class="param-name">${param.name}:</span>
+                <span>${(param.values || []).join(', ')}</span>
+                ${param.patterns && param.patterns.length > 0 ? `
+                    <div class="param-patterns">
+                        Patterns detected: ${param.patterns.join(', ')}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }).join('');
+    
+    return `
+        <div class="url-item">
+            <div>
+                <span class="url-method method-${url.method.toLowerCase()}">${url.method}</span>
+                <span class="url-address">${url.url}</span>
+            </div>
+            ${paramsHtml}
+        </div>
+    `;
+}
+
+function toggleReportCollapse(button) {
+    const reportCard = button.closest('.report-card');
+    const urlsContainer = reportCard.querySelector('.report-urls');
+    const isCollapsed = !urlsContainer.classList.contains('expanded');
+    
+    if (isCollapsed) {
+        // Показываем все URL
+        const allUrls = JSON.parse(reportCard.dataset.allUrls);
+        const fullUrlsHtml = allUrls.map(generateUrlHtml).join('');
+        
+        urlsContainer.innerHTML = fullUrlsHtml;
+        urlsContainer.classList.add('expanded');
+        urlsContainer.classList.remove('collapsed');
+        button.textContent = 'Show Less';
+    } else {
+        // Показываем только первые 10 URL
+        const allUrls = JSON.parse(reportCard.dataset.allUrls);
+        const displayedUrls = allUrls.slice(0, 3);
+        const hiddenCount = allUrls.length - 3;
+        
+        const limitedUrlsHtml = displayedUrls.map(generateUrlHtml).join('');
+        
+        urlsContainer.innerHTML = limitedUrlsHtml + `
+            <div class="hidden-items-notice">
+                ... ${hiddenCount} more URLs hidden
+            </div>
+        `;
+        urlsContainer.classList.add('collapsed');
+        urlsContainer.classList.remove('expanded');
+        button.textContent = 'Show All';
+    }
+}
+
         
         async function saveReport(url) {
             try {
@@ -460,23 +577,80 @@
         }
         
         async function getSQLMapReport(reportId) {
-            const modal = document.getElementById('sqlmapModal');
-            const content = document.getElementById('sqlmapContent');
-            
-            modal.style.display = 'flex';
-            content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading SQLMap report...</p></div>';
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/report/${reportId}/sqlmap`);
-                if (!response.ok) throw new Error('Failed to load SQLMap report');
-                
-                const data = await response.text();
-                content.innerHTML = `<pre>${data}</pre>`;
-            } catch (error) {
-                content.innerHTML = `<p style="color: var(--danger-color);">Error: ${error.message}</p>`;
-                console.error('Error loading SQLMap report:', error);
-            }
+    const modal = document.getElementById('sqlmapModal');
+    const content = document.getElementById('sqlmapContent');
+    
+    // Показываем модальное окно и индикатор загрузки
+    modal.style.display = 'flex';
+    content.innerHTML = `
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Loading SQLMap report...</p>
+        </div>
+    `;
+    
+    try {
+        // Добавляем таймаут для запроса
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 секунд таймаут
+        
+        const response = await fetch(`${API_BASE_URL}/report/${reportId}/sqlmap`, {
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId); // Очищаем таймаут если запрос успешен
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || `Server returned ${response.status} status`);
         }
+        
+        // Проверяем тип контента
+        const contentType = response.headers.get('content-type');
+        let data;
+        
+        if (contentType && contentType.includes('application/json')) {
+            data = await response.json();
+            // Форматируем JSON для красивого отображения
+            content.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        } else {
+            data = await response.text();
+            // Экранируем HTML для безопасности
+            content.innerHTML = `<pre>${escapeHtml(data)}</pre>`;
+        }
+        
+    } catch (error) {
+        let errorMessage = 'Failed to load SQLMap report';
+        
+        if (error.name === 'AbortError') {
+            errorMessage = 'Request timed out (15s)';
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+        
+        content.innerHTML = `
+            <div class="error-message">
+                <p style="color: var(--danger-color); margin-bottom: 10px;">
+                    <strong>Error:</strong> ${errorMessage}
+                </p>
+                <button onclick="getSQLMapReport('${reportId}')" class="btn btn-accent">
+                    Retry
+                </button>
+            </div>
+        `;
+        console.error('Error loading SQLMap report:', error);
+    }
+}
+
+// Вспомогательная функция для экранирования HTML
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
     </script>
 </body>
 </html>

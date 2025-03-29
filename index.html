@@ -14,6 +14,61 @@
             --success-color: #28a745;
             --danger-color: #dc3545;
             --pattern-color: #ff9800;
+            --highlight-color: #3a86ff; /* Новый цвет для акцентных элементов */
+        }
+
+        #newReportBtn {
+            background-color: #3a86ff; /* Яркий синий */
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(58, 134, 255, 0.2);
+            letter-spacing: 0.5px;
+        }
+
+        #newReportBtn:hover {
+            background-color: #2a75e6; /* Темнее при наведении */
+            box-shadow: 0 4px 8px rgba(58, 134, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        #newReportBtn:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(58, 134, 255, 0.2);
+        }
+
+        /* Обновляем стиль кнопки */
+        .btn-primary {
+            background-color: var(--highlight-color);
+            color: white;
+            border: none;
+            border-radius: 8px; /* Более скругленные углы */
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background-color: #2a75e6;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         body {
@@ -321,7 +376,9 @@
         <div class="container">
             <div class="header-content">
                 <h1>Security Reports Dashboard</h1>
-                <button id="newReportBtn" class="btn btn-primary">Create New Report</button>
+                <button id="newReportBtn" class="btn btn-primary">
+                    Create New Report
+                </button>
             </div>
         </div>
     </header>

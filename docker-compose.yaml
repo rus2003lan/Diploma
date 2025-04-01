@@ -1,5 +1,21 @@
 version: "3.7"
 services:
+  back:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile_back
+      args:
+        - NO_CACHE=${CACHE_BUSTER:-1}
+    restart: always
+    container_name: backend_reports
+    depends_on:
+      - elasticsearch
+      - kibana
+      - minio
+    ports:
+      - "8080:8080"
+    networks:
+      - ps
 
   elasticsearch:
     image: bitnami/elasticsearch:7.17.10
@@ -12,6 +28,8 @@ services:
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
     volumes:
       - elastic_vol:/usr/share/elasticsearch/data
+    networks:
+      - ps
 
   kibana:
     image: bitnami/kibana:7.17.10
@@ -28,6 +46,8 @@ services:
           cpus: "1.0"
     depends_on:
       - elasticsearch
+    networks:
+      - ps
     
   minio:
     image: minio/minio
@@ -41,7 +61,12 @@ services:
     environment:
       MINIO_ACCESS_KEY: minio
       MINIO_SECRET_KEY: minio123
+    networks:
+      - ps
 
 volumes:
   elastic_vol:
   minio_vol:
+
+networks:
+  ps:

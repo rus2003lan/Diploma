@@ -1,5 +1,5 @@
 run_env_containers:
-	docker compose -f docker-compose.yaml up --build --remove-orphans -d
+	docker compose -f docker-compose.yaml up --build --remove-orphans
 
 testing_unit:
 	go test ./... -v

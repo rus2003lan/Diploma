@@ -13,11 +13,11 @@ startupIndexConfig:
 elastic:
   index: report
   hosts:
-    - http://elasticsearch-diploma:9200
+    - http://localhost:9200
   maxRetries: 5
 
 ceph:
-  endpoint: "http://minio-diploma:9000"
+  endpoint: "http://localhost:9000"
   accessKey: "minio"
   secretKey: "minio123"
   bucket: "sqlmap-report"

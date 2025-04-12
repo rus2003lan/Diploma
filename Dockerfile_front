@@ -1,0 +1,21 @@
+FROM golang:latest AS builder
+
+WORKDIR /app
+
+RUN export GO111MODULE=on
+
+COPY ./go.mod ./go.sum ./
+
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=0 go build -v -o ./front ./cmd/front
+
+FROM alpine:latest AS runner
+
+COPY --from=builder /app/front .
+
+EXPOSE 8000
+
+CMD [ "./front"]

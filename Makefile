@@ -1,5 +1,5 @@
 run_env_containers:
-	docker compose -f docker-compose.yaml up --build --remove-orphans
+	docker compose -f docker-compose.yaml up --build --remove-orphans -d
 
 testing_unit:
 	go test ./... -v
@@ -17,7 +17,7 @@ web_api:
 	go run ./cmd/reports/* web-api
 
 front:
-	go run ./cmd/front/*
+	go run ./cmd/front/main.go
 
 generate_oapi_server:
 	oapi-codegen --config=./api/web/cfg.yaml ./api/web/openapi.yaml
